@@ -86,4 +86,21 @@ public class TransferServiceTest {
         assertTrue(exception.getMessage().contains("No applicable tax found"));
     }
 
+    @Test
+    void shouldThrowExceptionWhenSourceAndDestinationAccountsAreTheSame() {
+        LocalDate today = LocalDate.of(2026, 10, 9);
+        TransferDto dto = TransferDto.builder()
+                .sourceAccount("1234567890")
+                .destinationAccount("1234567890")
+                .transferAmount(new BigDecimal("100.00"))
+                .scheduleDate(today)
+                .build();
+
+        Exception exception = assertThrows(BusinessException.class, () -> {
+            transferService.scheduleTransfer(dto);
+        });
+
+        assertTrue(exception.getMessage().contains("can't be the same"));
+    }
+
 }

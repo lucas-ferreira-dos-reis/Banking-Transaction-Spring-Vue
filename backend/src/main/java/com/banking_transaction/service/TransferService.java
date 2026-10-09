@@ -26,6 +26,10 @@ public class TransferService {
     }
 
     public Transfer scheduleTransfer(TransferDto transferDto) {
+        if (transferDto.getSourceAccount().equals(transferDto.getDestinationAccount())) {
+            throw new BusinessException("The source account and the destination account can't be the same.");
+        }
+
         LocalDate transferDate = LocalDate.now();
         LocalDate scheduleDate = transferDto.getScheduleDate();
 
