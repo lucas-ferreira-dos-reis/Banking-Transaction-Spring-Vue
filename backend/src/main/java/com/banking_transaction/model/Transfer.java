@@ -56,4 +56,14 @@ public class Transfer {
     @Column(name = "schedule_date", nullable = false)
     private LocalDate scheduleDate;
 
+    public Transfer(String sourceAccount, String destinationAccount, BigDecimal transferAmount, BigDecimal feeAmount,
+            LocalDate transferDate, LocalDate scheduleDate) {
+        this.sourceAccount = sourceAccount;
+        this.destinationAccount = destinationAccount;
+        this.transferAmount = transferAmount;
+        this.feeAmount = feeAmount;
+        this.transferDate = transferDate;
+        this.scheduleDate = scheduleDate;
+    }
+
 }
