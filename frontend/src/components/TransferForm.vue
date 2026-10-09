@@ -2,9 +2,6 @@
   <div class="card shadow-sm p-4">
     <h4 class="mb-3">Nova Transferência</h4>
 
-    <div v-if="errorMessage" class="alert alert-danger" role="alert">
-      {{ errorMessage }}
-    </div>
     <div v-if="successMessage" class="alert alert-success" role="alert">
       {{ successMessage }}
     </div>
@@ -15,11 +12,15 @@
         <input
           type="text"
           class="form-control"
+          :class="{ 'is-invalid': errors.sourceAccount }"
           v-model="form.sourceAccount"
           maxlength="10"
           placeholder="Ex: 1234567890"
           required
         />
+      </div>
+      <div class="invalid-feedback d-block" v-if="errors.sourceAccount">
+        {{ errors.sourceAccount }}
       </div>
 
       <div class="mb-3">
@@ -27,11 +28,15 @@
         <input
           type="text"
           class="form-control"
+          :class="{ 'is-invalid': errors.destinationAccount }"
           v-model="form.destinationAccount"
           maxlength="10"
           placeholder="Ex: 0987654321"
           required
         />
+      </div>
+      <div class="invalid-feedback d-block" v-if="errors.destinationAccount">
+        {{ errors.destinationAccount }}
       </div>
 
       <div class="mb-3">
@@ -40,10 +45,14 @@
           type="number"
           step="0.01"
           class="form-control"
+          :class="{ 'is-invalid': errors.transferAmount }"
           v-model="form.transferAmount"
           placeholder="0.00"
           required
         />
+      </div>
+      <div class="invalid-feedback d-block" v-if="errors.transferAmount">
+        {{ errors.transferAmount }}
       </div>
 
       <div class="mb-3">
@@ -51,11 +60,15 @@
         <input
           type="date"
           class="form-control"
+          :class="{ 'is-invalid': errors.scheduleDate }"
           v-model="form.scheduleDate"
           :min="minScheduleDate"
           :max="maxScheduleDate"
           required
         />
+      </div>
+      <div class="invalid-feedback d-block" v-if="errors.scheduleDate">
+        {{ errors.scheduleDate }}
       </div>
 
       <button type="submit" class="btn btn-primary w-100">
@@ -78,7 +91,7 @@ export default {
         transferAmount: "",
         scheduleDate: "",
       },
-      errorMessage: "",
+      errors: {},
       successMessage: "",
     };
   },
@@ -103,33 +116,38 @@ export default {
     },
     validateForm() {
       const accountRegex = /^\d{10}$/;
-      const hasError = false;
+      this.errors = {};
 
       if (!accountRegex.test(this.form.sourceAccount)) {
-        this.errorMessage =
+        this.errors.sourceAccount =
           "A conta de origem deve conter exatamente 10 dígitos numéricos.";
-        hasError = true;
       }
 
       if (!accountRegex.test(this.form.destinationAccount)) {
-        this.errorMessage =
+        this.errors.destinationAccount =
           "A conta de destino deve conter exatamente 10 dígitos numéricos.";
-        hasError = true;
       }
 
-      if (this.form.sourceAccount === this.form.destinationAccount) {
-        this.errorMessage = "A conta de origem e destino não podem ser iguais.";
-        hasError = true;
+      if (
+        this.form.sourceAccount &&
+        this.form.destinationAccount &&
+        this.form.sourceAccount === this.form.destinationAccount
+      ) {
+        this.errors.destinationAccount =
+          "A conta de origem e destino não podem ser iguais.";
       }
 
-      if (Number(this.form.transferAmount) <= 0) {
-        this.errorMessage = "O valor da transferência deve ser maior que zero.";
-        hasError = true;
+      if (
+        this.form.transferAmount === "" ||
+        !Number.isFinite(Number(this.form.transferAmount)) ||
+        Number(this.form.transferAmount) <= 0
+      ) {
+        this.errors.transferAmount =
+          "O valor da transferência deve ser maior que zero.";
       }
 
       if (!this.form.scheduleDate) {
-        this.errorMessage = "A data da transferência é obrigatória.";
-        hasError = true;
+        this.errors.scheduleDate = "A data da transferência é obrigatória.";
       } else {
         const [year, month, day] = this.form.scheduleDate
           .split("-")
@@ -145,21 +163,18 @@ export default {
         maxDate.setDate(maxDate.getDate() + 50);
 
         if (scheduleDate < today) {
-          this.errorMessage =
+          this.errors.scheduleDate =
             "A data da transferência não pode estar no passado.";
-          hasError = true;
         } else if (scheduleDate > maxDate) {
-          this.errorMessage =
+          this.errors.scheduleDate =
             "A data da transferência está fora das faixas estipuladas pela tabela.";
-          hasError = true;
         }
       }
 
-      return !hasError;
+      return Object.keys(this.errors).length === 0;
     },
 
     handleSubmit() {
-      this.errorMessage = "";
       this.successMessage = "";
 
       if (!this.validateForm()) {
