@@ -15,8 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.banking_transaction.domain.dto.TransferDto;
+import com.banking_transaction.domain.model.Transfer;
 import com.banking_transaction.exception.BusinessException;
-import com.banking_transaction.model.Transfer;
 import com.banking_transaction.repository.TransferRepository;
 
 public class TransferServiceTest {
@@ -34,39 +35,52 @@ public class TransferServiceTest {
 
     @Test
     void shouldCalculateFeeForSameDayTransfer() {
-        LocalDate today = LocalDate.of(2026, 10, 8);
-        Transfer transfer = new Transfer("1234567890", "0987654321", new BigDecimal("100.00"), null, today, today);
+        LocalDate today = LocalDate.now();
+        TransferDto dto = TransferDto.builder()
+                .sourceAccount("1234567890")
+                .destinationAccount("0987654321")
+                .transferAmount(new BigDecimal("100.00"))
+                .scheduleDate(today)
+                .build();
 
         when(transferRepository.save(any(Transfer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Transfer result = transferService.scheduleTransfer(transfer);
+        Transfer result = transferService.scheduleTransfer(dto);
 
         assertEquals(new BigDecimal("5.50"), result.getFeeAmount());
     }
 
     @Test
     void shouldCalculateFeeFor1To10DaysTransfer() {
-        LocalDate scheduleDate = LocalDate.of(2026, 10, 8);
-        LocalDate transferDate = scheduleDate.plusDays(5);
-        Transfer transfer = new Transfer("1234567890", "0987654321", new BigDecimal("100.00"), null,
-                transferDate, scheduleDate);
+        LocalDate today = LocalDate.now();
+        LocalDate transferDate = today.plusDays(5);
+        TransferDto dto = TransferDto.builder()
+                .sourceAccount("1234567890")
+                .destinationAccount("0987654321")
+                .transferAmount(new BigDecimal("100.00"))
+                .scheduleDate(transferDate)
+                .build();
 
         when(transferRepository.save(any(Transfer.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Transfer result = transferService.scheduleTransfer(transfer);
+        Transfer result = transferService.scheduleTransfer(dto);
 
         assertEquals(new BigDecimal("12.00"), result.getFeeAmount());
     }
 
     @Test
     void shouldThrowExceptionWhenNoTaxIsApplicable() {
-        LocalDate scheduleDate = LocalDate.of(2026, 10, 8);
-        LocalDate transferDate = scheduleDate.plusDays(51);
-        Transfer transfer = new Transfer("1234567890", "0987654321", new BigDecimal("100.00"), null,
-                transferDate, scheduleDate);
+        LocalDate today = LocalDate.now();
+        LocalDate transferDate = today.plusDays(51);
+        TransferDto dto = TransferDto.builder()
+                .sourceAccount("1234567890")
+                .destinationAccount("0987654321")
+                .transferAmount(new BigDecimal("100.00"))
+                .scheduleDate(transferDate)
+                .build();
 
         Exception exception = assertThrows(BusinessException.class, () -> {
-            transferService.scheduleTransfer(transfer);
+            transferService.scheduleTransfer(dto);
         });
 
         assertTrue(exception.getMessage().contains("No applicable tax found"));

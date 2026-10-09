@@ -1,4 +1,4 @@
-package com.banking_transaction.model;
+package com.banking_transaction.domain.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Transfer {
 
     @Id
@@ -55,15 +57,5 @@ public class Transfer {
     @NotNull(message = "Schedule date is mandatory")
     @Column(name = "schedule_date", nullable = false)
     private LocalDate scheduleDate;
-
-    public Transfer(String sourceAccount, String destinationAccount, BigDecimal transferAmount, BigDecimal feeAmount,
-            LocalDate transferDate, LocalDate scheduleDate) {
-        this.sourceAccount = sourceAccount;
-        this.destinationAccount = destinationAccount;
-        this.transferAmount = transferAmount;
-        this.feeAmount = feeAmount;
-        this.transferDate = transferDate;
-        this.scheduleDate = scheduleDate;
-    }
 
 }

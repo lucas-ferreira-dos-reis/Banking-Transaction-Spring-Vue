@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.banking_transaction.domain.dto.TransferDto;
+import com.banking_transaction.domain.model.Transfer;
 import com.banking_transaction.exception.BusinessException;
-import com.banking_transaction.model.Transfer;
 import com.banking_transaction.service.TransferService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,10 +35,10 @@ public class TransferController {
     }
 
     @PostMapping
-    public ResponseEntity<Object> scheduleTransfer(@Valid @RequestBody Transfer transfer) {
+    public ResponseEntity<Object> scheduleTransfer(@Valid @RequestBody TransferDto dto) {
         try {
-            Transfer saved = transferService.scheduleTransfer(transfer);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+            Transfer transfer = transferService.scheduleTransfer(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(transfer);
         } catch (BusinessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

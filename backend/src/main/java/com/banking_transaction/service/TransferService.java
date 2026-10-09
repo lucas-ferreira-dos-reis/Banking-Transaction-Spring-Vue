@@ -2,13 +2,15 @@ package com.banking_transaction.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.banking_transaction.domain.dto.TransferDto;
+import com.banking_transaction.domain.model.Transfer;
 import com.banking_transaction.exception.BusinessException;
-import com.banking_transaction.model.Transfer;
 import com.banking_transaction.repository.TransferRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,11 +25,22 @@ public class TransferService {
         return transferRepository.findAll();
     }
 
-    public Transfer scheduleTransfer(Transfer transfer) {
-        Long daysDiff = ChronoUnit.DAYS.between(transfer.getScheduleDate(), transfer.getTransferDate());
+    public Transfer scheduleTransfer(TransferDto transferDto) {
+        LocalDate transferDate = LocalDate.now();
+        LocalDate scheduleDate = transferDto.getScheduleDate();
 
-        BigDecimal fee = calculateFee(transfer.getTransferAmount(), daysDiff);
-        transfer.setFeeAmount(fee);
+        Long daysDiff = ChronoUnit.DAYS.between(transferDate, scheduleDate);
+
+        BigDecimal fee = calculateFee(transferDto.getTransferAmount(), daysDiff);
+
+        Transfer transfer = Transfer.builder()
+                .sourceAccount(transferDto.getSourceAccount())
+                .destinationAccount(transferDto.getDestinationAccount())
+                .transferAmount(transferDto.getTransferAmount())
+                .feeAmount(fee)
+                .transferDate(transferDate)
+                .scheduleDate(scheduleDate)
+                .build();
 
         return transferRepository.save(transfer);
     }
