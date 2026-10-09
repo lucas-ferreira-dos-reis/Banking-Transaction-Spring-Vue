@@ -4,7 +4,7 @@
 
     <div class="row">
       <div class="col-md-6 mb-4">
-        <!-- Formulário -->
+        <TransferForm @transfer-created="fetchTransfers" />
       </div>
 
       <div class="col-md-6 mb-4">
@@ -14,21 +14,25 @@
 
     <div class="row">
       <div class="col-12">
-        <!-- Lista de transferências -->
+        <TransferList :transfers="transfers" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import TransferForm from "./components/TransferForm.vue";
 import TaxTable from "./components/TaxTable.vue";
+import TransferList from "./components/TransferList.vue";
 import { transferService } from "./service/transferService.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default {
   name: "App",
   components: {
+    TransferForm,
     TaxTable,
+    TransferList,
   },
   data() {
     return {
@@ -40,7 +44,7 @@ export default {
   },
   methods: {
     fetchTransfers() {
-      transferService.getTransfers(
+      transferService.getAllTransfers(
         (response) => {
           this.transfers = response;
         },
